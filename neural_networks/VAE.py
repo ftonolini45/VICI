@@ -323,8 +323,8 @@ class ConditionalDecoder(object):
     
 class ConditionalEncoder(object):
     '''
-    Class for Gaussian conditional decoder, taking inputs x, latent variable
-    z and outputting Gaussian distribution p(y|z,x)
+    Class for Gaussian conditional encoder, taking inputs y and x and outputting latent variable
+    distribution q(z|x,y)
     '''
     
     def __init__(self, name, n_x, n_y, n_z, N_hx, N_hy, N_h, nonlinearity=tf.nn.leaky_relu, sig_lim=10):
@@ -356,7 +356,7 @@ class ConditionalEncoder(object):
         self.weights = network_weights
         self.nonlinearity = nonlinearity
         
-    def compute_moments(self,y,x):
+    def compute_moments(self,x,y):
         '''
         compute moments of latent Gaussian distribution
         INPUTS:
