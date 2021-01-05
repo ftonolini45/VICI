@@ -141,7 +141,7 @@ def cvae_cost(x, y, encoder, decoder, encoder_c):
     mu_cz, log_sig_sq_cz = encoder_c.compute_moments(x)
     
     # compute moments of q(z|x,y)
-    mu_z, log_sig_sq_z = encoder.compute_moments(y,x)
+    mu_z, log_sig_sq_z = encoder.compute_moments(x,y)
     
     # sample from q(z|x,y)
     z = reparameterisation_trick(mu_z, log_sig_sq_z)

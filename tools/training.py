@@ -12,9 +12,9 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
     '''
     Training function for multi-fidelity forward model. Trains the model and saves the trained weights.
     INPUTS:
-        targets - ground-truths to be eventually reconstructed with the inverse model
-        low_fidelity - low-fidelity measurements simulated with some analytical forward model
-        high_fidelity - measured high fidelity measurements to be reproduced
+        targets - ground-truths to be eventually reconstructed with the inverse model in the format [n_samples,dimensions]
+        low_fidelity - low-fidelity measurements simulated with some analytical forward model in the format [n_samples,dimensions]
+        high_fidelity - measured high fidelity measurements to be reproduced in the format [n_samples,dimensions]
         encoder - the neural network to be used for mapping targets, low_fidelity and high_fidelity to mu_z and log_sig_sq_z
         decoder - the neural network to be used for mapping z, targets and low_fidelity to mu_hf and log_sig_sq_hf
         encoder_c - the neural network to be used for mapping targets and low_fidelity to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
@@ -85,8 +85,8 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
     '''
     Training function for inverse model. Trains the model and saves the trained weights.
     INPUTS:
-        targets - ground-truths to be eventually reconstructed with the inverse model
-        low_fidelity - low-fidelity measurements simulated with some analytical forward model
+        targets - ground-truths to be eventually reconstructed with the inverse model in the format [n_samples,dimensions]
+        low_fidelity - low-fidelity measurements simulated with some analytical forward model in the format [n_samples,dimensions]
         encoder - the neural network to be used for mapping measurements and targets to mu_z and log_sig_sq_z
         decoder - the neural network to be used for mapping z and measurements to mu_targets and log_sig_sq_targets
         encoder_c - the neural network to be used for mapping measurements to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
@@ -94,8 +94,8 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
         fm_encoder_c - the forward model encoder neural network to be used for mapping targets and low_fidelity to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
         params - optimisation parameters (see examples)
     OPTIONAL INPUTS:
-        experimental_measurements - experimental measurements to be optionally included alongside forward model-emulated ones in training
-        experimental_targets - ground truth targets corresponding to the bove measurements
+        experimental_measurements - experimental measurements to be optionally included alongside forward model-emulated ones in training in the format [n_samples,dimensions]
+        experimental_targets - ground truth targets corresponding to the bove measurements in the format [n_samples,dimensions]
         save_dir - directory in which to save the trained inverse model weights (defaults to 'neural_networks/saved-weights/inverse_model')
         load_dir - directory from which to load the trained inverse model weights (defaults to 'neural_networks/saved-weights/forward_model')
     OUTPUTS:

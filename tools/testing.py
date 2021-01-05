@@ -11,14 +11,14 @@ def forward_model(targets, low_fidelity, decoder, encoder_c, load_dir='neural_ne
     '''
     Function to run the multi-fidelity forward model
     INPUTS:
-        targets - ground-truth targets
-        low_fidelity - low-fidelity simulated measurements
+        targets - ground-truth targets in the format [n_samples,dimensions]
+        low_fidelity - low-fidelity simulated measurements in the format [n_samples,dimensions]
         decoder - decoder of the forward model CVAE
         encoder_c - conditional encoder of the forward model CVAE
     OPTIONAL INPUTS:
         load_dir - directory from which to load the weights
     OUTPUTS:
-        synthetic_measurements - sampled emulated measurements using the multi-fidelity forward model
+        synthetic_measurements - sampled emulated measurements using the multi-fidelity forward model in the format [n_samples,dimensions]
     '''
     
     # Load the weights from the specified directory
@@ -57,14 +57,14 @@ def inverse_model(measurements, decoder, encoder_c, sample=False, load_dir='neur
     '''
     Function to run the inverse model
     INPUTS:
-        measurements - measurements to infer reconstructions from
+        measurements - measurements to infer reconstructions from in the format [n_samples,dimensions]
         decoder - decoder of the inverse model CVAE
         encoder_c - conditional encoder of the inverse model CVAE
     OPTIONAL INPUTS:
         sample - if True, the samples are are sampled from p(x|z,y), if False the samples are the mean
         load_dir - directory from which to load the weights
     OUTPUTS:
-        reconstruction_sample - sampled reconstruction
+        reconstruction_sample - sampled reconstruction in the format [n_samples,dimensions]
     '''
     
     x = tf.cast(measurements,tf.float32)
@@ -92,16 +92,16 @@ def forward_model_test(targets, low_fidelity, decoder, encoder_c, n_samp=10, loa
     '''
     Function to run the multi-fidelity forward model several times and return samples along with mean and std
     INPUTS:
-        measurements - measurements to infer reconstructions from
+        measurements - measurements to infer reconstructions from in the format [n_samples,dimensions]
         decoder - decoder of the inverse model CVAE
         encoder_c - conditional encoder of the inverse model CVAE
     OPTIONAL INPUTS:
         n_samp = number of samples to compute
         load_dir - directory from which to load the weights
     OUTPUTS:
-        INV_samples - array of samples from the inverse model (samples are along dim 2)
-        mu - means of the samples
-        sig - standard deviation of the samples
+        INV_samples - array of samples from the forward model (samples are along dim 2) in the format [n_samples,dimensions,n_samp]
+        mu - means of the samples in the format [n_samples,dimensions]
+        sig - standard deviation of the samples in the format [n_samples,dimensions]
     '''
     
     for i in range(n_samp):
@@ -122,8 +122,8 @@ def inverse_model_test(measurements, decoder, encoder_c, n_samp=10, sample=False
     '''
     Function to run the multi-fidelity forward model several times and return samples along with mean and std
     INPUTS:
-        targets - ground-truth targets
-        low_fidelity - low-fidelity simulated measurements
+        targets - ground-truth targets in the format [n_samples,dimensions]
+        low_fidelity - low-fidelity simulated measurements in the format [n_samples,dimensions]
         decoder - decoder of the forward model CVAE
         encoder_c - conditional encoder of the forward model CVAE
     OPTIONAL INPUTS:
@@ -131,9 +131,9 @@ def inverse_model_test(measurements, decoder, encoder_c, n_samp=10, sample=False
         sample - if True, the samples are are sampled from p(x|z,y), if False the samples are the mean
         load_dir - directory from which to load the weights
     OUTPUTS:
-        INV_samples - array of samples from the forward model (samples are along dim 2)
-        mu - means of the samples
-        sig - standard deviation of the samples
+        INV_samples - array of samples from the forward model (samples are along dim 2) in the format [n_samples,dimensions,n_samp]
+        mu - means of the samples in the format [n_samples,dimensions]
+        sig - standard deviation of the samples in the format [n_samples,dimensions]
     '''
     
     for i in range(n_samp):
@@ -149,32 +149,3 @@ def inverse_model_test(measurements, decoder, encoder_c, n_samp=10, sample=False
     sig = np.std(INV_samples,axis=2)
     
     return INV_samples, mu, sig
-    
-
-def classify(x, NN, load_dir='neural_networks/saved-weights/classifier'):
-    '''
-    Function to classify input x using pre-trained classifier NN
-    INPUTS:
-        x - inputs
-        Ax - mask of missings in input
-        NN - classifier model
-    OPTIONAL INPUTS:
-        load_dir - directory from which to load the classifier weights
-    OUTPUTS:
-        mu_y - generated output mean
-        y_samp - sample of generated output
-    '''
-    
-    # Load the weights from the specified directory
-    load_name = load_dir + '/W'
-    var_logger.restore_dict(load_name,NN.weights)
-    
-    x = tf.cast(x,tf.float32)
-    
-    # SMALL_CONSTANT = 1e-6
-        
-    # p(y|x)
-    py = NN.compute_py(x)
-    py = py.numpy()
-    
-    return py
