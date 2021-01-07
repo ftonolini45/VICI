@@ -461,7 +461,7 @@ class ConditionalEncoder(object):
 class DoubleConditionalDecoder(object):
     '''
     Class for Gaussian conditional decoder, taking inputs x and x2, latent variable
-    z and outputting Gaussian distribution p(y|z,x)
+    z and outputting Gaussian distribution p(y|z,x,x2)
     '''
     
     def __init__(self, name, n_x, n_x2, n_y, n_z, N_hx, N_hx2, N_hz, N_h, nonlinearity=tf.nn.leaky_relu, sig_lim=10):
@@ -628,8 +628,7 @@ class DoubleConditionalDecoder(object):
     
 class DoubleConditionalEncoder(object):
     '''
-    Class for Gaussian conditional decoder, taking inputs x, latent variable
-    z and outputting Gaussian distribution p(y|z,x)
+    Class for Gaussian conditional encoder, taking inputs x, x2 and y, and outputting latent Gaussian distribution q(z|x,x2,y)
     '''
     
     def __init__(self, name, n_x, n_x2, n_y, n_z, N_hx, N_hx2, N_hy, N_h, nonlinearity=tf.nn.leaky_relu, sig_lim=10):
