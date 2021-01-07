@@ -7,7 +7,7 @@ from tools import var_logger
 from tools import costs
 import numpy as np
 
-def forward_model(targets, low_fidelity, decoder, encoder_c, load_dir='neural_networks/saved-weights/forward_model'):
+def forward_model(targets, low_fidelity, decoder, encoder_c, sample=True, load_dir='neural_networks/saved-weights/forward_model'):
     '''
     Function to run the multi-fidelity forward model
     INPUTS:
@@ -16,6 +16,7 @@ def forward_model(targets, low_fidelity, decoder, encoder_c, load_dir='neural_ne
         decoder - decoder of the forward model CVAE
         encoder_c - conditional encoder of the forward model CVAE
     OPTIONAL INPUTS:
+        sample - if True, the samples are are sampled from p(y|z,x), if False the samples are the mean
         load_dir - directory from which to load the weights
     OUTPUTS:
         synthetic_measurements - sampled emulated measurements using the multi-fidelity forward model in the format [n_samples,dimensions]
@@ -46,8 +47,11 @@ def forward_model(targets, low_fidelity, decoder, encoder_c, load_dir='neural_ne
     # compute moments of p(y|z,x)
     mu_y, log_sig_sq_y = decoder.compute_moments(z,x,x2,constrain=constrain)
     
-    # sample from p(y|z,x)
-    y = costs.reparameterisation_trick(mu_y, log_sig_sq_y)
+    if sample==True:
+        # sample from p(y|z,x)
+        y = costs.reparameterisation_trick(mu_y, log_sig_sq_y)
+    else:
+        y = mu_y
     
     synthetic_measurements = y.numpy()
     
@@ -88,7 +92,7 @@ def inverse_model(measurements, decoder, encoder_c, sample=False, load_dir='neur
     
     return reconstruction_sample
 
-def forward_model_test(targets, low_fidelity, decoder, encoder_c, n_samp=10, load_dir='neural_networks/saved-weights/forward_model'):
+def forward_model_test(targets, low_fidelity, decoder, encoder_c, n_samp=10, sample=True, load_dir='neural_networks/saved-weights/forward_model'):
     '''
     Function to run the multi-fidelity forward model several times and return samples along with mean and std
     INPUTS:
@@ -96,7 +100,8 @@ def forward_model_test(targets, low_fidelity, decoder, encoder_c, n_samp=10, loa
         decoder - decoder of the inverse model CVAE
         encoder_c - conditional encoder of the inverse model CVAE
     OPTIONAL INPUTS:
-        n_samp = number of samples to compute
+        n_samp - number of samples to compute
+        sample - if True, the samples are are sampled from p(y|z,x), if False the samples are the mean
         load_dir - directory from which to load the weights
     OUTPUTS:
         INV_samples - array of samples from the forward model (samples are along dim 2) in the format [n_samples,dimensions,n_samp]
@@ -106,7 +111,7 @@ def forward_model_test(targets, low_fidelity, decoder, encoder_c, n_samp=10, loa
     
     for i in range(n_samp):
         
-        fm_samples = forward_model(targets, low_fidelity, decoder, encoder_c, load_dir=load_dir)
+        fm_samples = forward_model(targets, low_fidelity, decoder, encoder_c, sample=sample, load_dir=load_dir)
         
         if i==0:
             FM_samples = np.zeros((np.shape(fm_samples)[0],np.shape(fm_samples)[1],n_samp))

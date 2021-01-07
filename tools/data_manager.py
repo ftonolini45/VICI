@@ -39,7 +39,7 @@ def load_holographic(n_test=1000):
     
     return x_exp, y_exp_hf, y_exp_lf, x_exp_test, y_exp_hf_test, y_exp_lf_test, x_sim, y_sim_lf
     
-def get_params(n_iterations=100001, rate=0.0001, batch_sz=30, report_inerval=100, save_int=2000, print_val=True):
+def get_params(n_iterations=100001, rate=0.0001, batch_sz=30, report_interval=100, save_int=2000, print_val=True):
     '''
     Makes a dictionary with the training parameters
     OPTIONAL INPUTS:
@@ -57,7 +57,7 @@ def get_params(n_iterations=100001, rate=0.0001, batch_sz=30, report_inerval=100
         num_iterations=n_iterations, # number of iterations inference model (inverse reconstruction)
         initial_training_rate=rate, # initial training rate for ADAM optimiser inference model (inverse reconstruction)
         batch_size=batch_sz, # batch size inference model (inverse reconstruction)
-        report_interval=report_inerval, # interval at which to save objective function values and optionally print info during inference training
+        report_interval=report_interval, # interval at which to save objective function values and optionally print info during inference training
         save_interval=save_int, # interval at which to save inference model weights
     )
     return params
