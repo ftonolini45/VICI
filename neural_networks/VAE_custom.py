@@ -41,7 +41,7 @@ class ImageAndLatent_To_Vector(object):
         # we want to pass x through a convolutional network, so we start by defining parameters for this:
         self.N_x = [3,9,30,60] # number of channels for each hidden layer
         self.st_x = [1,2,2,2] # strides for each convolutional layer
-        self.fs = [5,7,7,5] # filter sizes (they will be all square)
+        self.fs_x = [5,7,7,5] # filter sizes (they will be all square)
         
         # instead, z will go through a fully connected layer, so:
         self.N_z = [10,20,20,30,40] # number of hidden units in each layer

@@ -3,12 +3,13 @@ from neural_networks import layers
 import numpy as np
 import collections
 
-def fc_network(x_in, W, nonlinearity, add_b=True, ID=0):
+def fc_network(x_in, W, nl, nonlinearity, add_b=True, ID=0):
     '''
     run fully connected network
     INPUTS:
         x_in - input in the format [n_samples, dimensions]
         W - dictionary containing linear and additive weights (created with fc_make_weights)
+        nl - number of layers
         nonlinearity - non-linearity to be used, e.g. tf.nn.relu
     OPTIONAL INPUTS:
         add_b - whether to include additive weights b (True/False)
@@ -17,10 +18,7 @@ def fc_network(x_in, W, nonlinearity, add_b=True, ID=0):
         y_out - output of the network in the format [n_samples, dimensions]
     '''
     
-    if add_b==True:
-        num_layers_1 = tf.cast(len(W)/2,tf.int32)
-    else:
-        num_layers_1 = len(W)
+    num_layers_1 = nl
     
     for i in range(num_layers_1):
         ni = i+1
@@ -49,14 +47,14 @@ def fc_make_weights(W_dict,n_in,N, add_b=True, ID=0):
     '''
     
     num_layers_1 = tf.shape(N)[0]
-    N = tf.concat([n_in,N],axis=0)
+    N = tf.concat([tf.expand_dims(n_in,axis=0),N],axis=0)
     
     for i in range(num_layers_1):
         ni = i+1
         
         W_dict['W_h{}_to_h{}_ID{}'.format(ni-1,ni,ID)] = layers.tf_fc_weights_W(N[ni-1],N[ni])
         if add_b==True: 
-            W_dict['b_h{}_to_h{}_ID{}'.format(ni-1,ni,ID)] = layers.tf_fc_weights_b(N[ni-1],N[ni])
+            W_dict['b_h{}_to_h{}_ID{}'.format(ni-1,ni,ID)] = layers.tf_fc_weights_b(N[ni])
             
     return W_dict
 
