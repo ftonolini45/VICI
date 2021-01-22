@@ -102,7 +102,7 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
         cost_plot - batch training cost as a function of iterations
     '''
     
-    if experimental_measurements:
+    if experimental_measurements.any():
         n_sim = np.shape(targets)[0]
         targets = np.concatenate((targets,experimental_targets),axis=0)
     
@@ -122,8 +122,8 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
         # take inputs for the next batch
         tn = targets[next_indices, :]
         
-        if experimental_measurements:
-            if experimental_targets==None:
+        if experimental_measurements.any():
+            if experimental_targets.any()==None:
                 print('Error: to use experimental measurements you must provide associated experimental targets in the input "experimental_targets"')
                 break
                 
@@ -133,7 +133,7 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
             next_indeces_sim = next_indices[next_indices<n_sim]
             mn_real = experimental_measurements[next_indeces_real,:]
             lfn_sim = low_fidelity[next_indeces_sim,:]
-            mn_sim = testing.forward_model(tn, lfn_sim, fm_decoder, fm_encoder_c, load_dir=load_dir)
+            mn_sim = testing.forward_model(tn_sim, lfn_sim, fm_decoder, fm_encoder_c, load_dir=load_dir)
             tn = np.concatenate((tn_sim,tn_real),axis=0)
             mn = np.concatenate((mn_sim,mn_real),axis=0)
         else:

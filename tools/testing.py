@@ -71,6 +71,12 @@ def inverse_model(measurements, decoder, encoder_c, sample=False, load_dir='neur
         reconstruction_sample - sampled reconstruction in the format [n_samples,dimensions]
     '''
     
+    # Load the weights from the specified directory
+    load_name_decoder = load_dir + '/dec.mat'
+    load_name_encoder_c = load_dir + '/enc_c.mat'
+    var_logger.restore_dict(load_name_decoder,decoder.weights)
+    var_logger.restore_dict(load_name_encoder_c,encoder_c.weights)
+    
     x = tf.cast(measurements,tf.float32)
     
     # compute moments of p(z|x)
