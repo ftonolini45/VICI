@@ -62,4 +62,40 @@ def run_example(train_forward_model=True, train_inverse_model=True):
         results['cost'] = 0
     sio.savemat('results/capacitive_forward_model_examples.mat',results)   
 
+    # Define parameters for the optimisation of the inverse model
+    params_inverse = data_manager.get_params(n_iterations=100001, rate=0.0001, batch_sz=32)    
+    
+    # Build networks for inverse model
+    n_z = 20 # latent dimensionality
+    
+    # Encoder
+    encoder_inv = VAE.InverseModel_Encoder('encoder_inv', n_x, n_ch_hf, siz_hf, n_z)
+    
+    # Decoder
+    decoder_inv = VAE.InverseModel_Decoder('decoder_inv', n_z, n_ch_hf, siz_hf, n_x)
+    
+    # Conditional Encoder
+    encoder_c_inv = VAE.InverseModel_ConditionalEncoder('encoder_c_inv', n_ch_hf, siz_hf, n_z)
+        
+    if train_inverse_model==True:
+        
+        # Train the inverse model
+        cost_plot = training.inverse_model(x_sim, y_sim_lf, encoder_inv, decoder_inv, encoder_c_inv, decoder_fw, encoder_c_fw, params_inverse)
+        
+    # Test the model by generating a few samples, mean and standard deviation
+    samples, mu, sig = testing.inverse_model_test(y_exp_hf_test, decoder_inv, encoder_c_inv, sample=True)
+    
+    # Save the results in a .mat file
+    results = {}
+    results['target'] = x_exp_test
+    results['measurements'] = y_exp_hf_test
+    results['samples'] = samples
+    results['mean'] = mu
+    results['standard_deviation'] = sig
+    if train_inverse_model==True:
+        results['cost'] = cost_plot
+    else:
+        results['cost'] = 0
+    sio.savemat('results/capacitive_inverse_model_examples.mat',results)
+    
 run_example()
