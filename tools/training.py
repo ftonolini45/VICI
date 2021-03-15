@@ -8,7 +8,7 @@ from tools import var_logger
 from tools import costs
 from tools import testing
 
-def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encoder_c, params, difference=False, save_dir='neural_networks/saved-weights/forward_model'):
+def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encoder_c, params, difference=False, warm_up=False, wu_start=10000, wu_end=20000, save_dir='neural_networks/saved-weights/forward_model'):
     '''
     Training function for multi-fidelity forward model. Trains the model and saves the trained weights.
     INPUTS:
@@ -44,8 +44,16 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
         hfn = high_fidelity[next_indices, :]
         lfn = low_fidelity[next_indices, :]
         
+        if warm_up==True:
+            if i==0:
+                wu_c=1.0
+            elif i<wu_end and i>wu_start:
+                wu_c=wu_c-1/(wu_end-wu_start)   
+        else:
+            wu_c=0.0
+        
         # Optimisation Step
-        cost = lambda: costs.forward_model(tn, lfn, hfn, encoder, decoder, encoder_c, difference=difference)
+        cost = lambda: costs.forward_model(tn, lfn, hfn, encoder, decoder, encoder_c, wu_c=wu_c, difference=difference)
         optimizer.minimize(cost,var_list = [encoder.weights,decoder.weights,encoder_c.weights])
 
         # Compute cost value over the whole training set every "report_interval" iterations
@@ -53,7 +61,7 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
                 ni = ni+1
                 
                 # Compute cost
-                cost = costs.forward_model(tn, lfn, hfn, encoder, decoder, encoder_c, difference=difference)
+                cost = costs.forward_model(tn, lfn, hfn, encoder, decoder, encoder_c, wu_c=wu_c, difference=difference)
                 
                 # Put cost value in the plot (making sure it is a numpy and not tf)
                 cost_plot[ni] = cost.numpy()
@@ -81,7 +89,7 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
                 
     return cost_plot
 
-def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder, fm_encoder_c, params, experimental_measurements=None, experimental_targets=None, load_dir='neural_networks/saved-weights/forward_model', save_dir='neural_networks/saved-weights/inverse_model'):
+def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder, fm_encoder_c, params, experimental_measurements=None, warm_up=False, wu_start=10000, wu_end=20000, experimental_targets=None, load_dir='neural_networks/saved-weights/forward_model', save_dir='neural_networks/saved-weights/inverse_model'):
     '''
     Training function for inverse model. Trains the model and saves the trained weights.
     INPUTS:
@@ -139,9 +147,17 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
         else:
             lfn = low_fidelity[next_indices,:]
             mn = testing.forward_model(tn, lfn, fm_decoder, fm_encoder_c, load_dir=load_dir)
-
+            
+        if warm_up==True:
+            if i==0:
+                wu_c=1.0
+            elif i<wu_end and i>wu_start:
+                wu_c=wu_c-1/(wu_end-wu_start)   
+        else:
+            wu_c=0.0    
+        
         # Optimisation Step
-        cost = lambda: costs.inverse_model(mn, tn, encoder, decoder, encoder_c)
+        cost = lambda: costs.inverse_model(mn, tn, encoder, decoder, encoder_c, wu_c=wu_c)
         optimizer.minimize(cost,var_list = [encoder.weights,decoder.weights,encoder_c.weights])
 
         # Compute cost value over the whole training set every "report_interval" iterations
@@ -149,7 +165,7 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
                 ni = ni+1
                 
                 # Compute cost
-                cost = costs.inverse_model(mn, tn, encoder, decoder, encoder_c)
+                cost = costs.inverse_model(mn, tn, encoder, decoder, encoder_c, wu_c=wu_c)
                 
                 # Put cost value in the plot (making sure it is a numpy and not tf)
                 cost_plot[ni] = cost.numpy()
