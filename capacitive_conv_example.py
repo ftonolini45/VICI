@@ -43,7 +43,7 @@ def run_example(train_forward_model=True, train_inverse_model=True):
     if train_forward_model==True:
         
         # Train the multi-fidelity forward model
-        cost_plot = training.forward_model(x_exp, y_exp_lf, y_exp_hf, encoder_fw, decoder_fw, encoder_c_fw, params_forward)
+        cost_plot = training.forward_model(x_exp, y_exp_lf, y_exp_hf, encoder_fw, decoder_fw, encoder_c_fw, params_forward, warm_up=True, wu_start=10000, wu_end=20000)
     
     # Test the model by generating a few samples, mean and standard deviation
     samples, mu, sig = testing.forward_model_test(x_exp_test, y_exp_lf_test, decoder_fw, encoder_c_fw)
@@ -80,7 +80,7 @@ def run_example(train_forward_model=True, train_inverse_model=True):
     if train_inverse_model==True:
         
         # Train the inverse model
-        cost_plot = training.inverse_model(x_sim, y_sim_lf, encoder_inv, decoder_inv, encoder_c_inv, decoder_fw, encoder_c_fw, params_inverse)
+        cost_plot = training.inverse_model(x_sim, y_sim_lf, encoder_inv, decoder_inv, encoder_c_inv, decoder_fw, encoder_c_fw, params_inverse, warm_up=True, wu_start=10000, wu_end=20000)
         
     # Test the model by generating a few samples, mean and standard deviation
     samples, mu, sig = testing.inverse_model_test(y_exp_hf_test, decoder_inv, encoder_c_inv, sample=True)
