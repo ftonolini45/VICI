@@ -21,6 +21,9 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
         params - optimisation parameters (see examples)
     OPTIONAL INPUTS:
         difference - whether to model the high-fidelity directly (False) or the difference between high and low fidelity (True)
+        warm_up - whether to perform the bottleneck warmup
+        wu_start - at what iteration to start the warmup
+        wu_end - at what iteration to end the warmup
         save dir - directory in which to save the trained multi-fidelity forward model weights (defaults to neural_networks/saved-weights/forward_model)
     OUTPUTS:
         cost_plot - batch training cost as a function of iterations
@@ -89,7 +92,7 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
                 
     return cost_plot
 
-def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder, fm_encoder_c, params, experimental_measurements=None, warm_up=False, wu_start=10000, wu_end=20000, experimental_targets=None, load_dir='neural_networks/saved-weights/forward_model', save_dir='neural_networks/saved-weights/inverse_model'):
+def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder, fm_encoder_c, params, experimental_measurements=None, experimental_targets=None, warm_up=False, wu_start=10000, wu_end=20000, load_dir='neural_networks/saved-weights/forward_model', save_dir='neural_networks/saved-weights/inverse_model'):
     '''
     Training function for inverse model. Trains the model and saves the trained weights.
     INPUTS:
@@ -104,6 +107,9 @@ def inverse_model(targets, low_fidelity, encoder, decoder, encoder_c, fm_decoder
     OPTIONAL INPUTS:
         experimental_measurements - experimental measurements to be optionally included alongside forward model-emulated ones in training in the format [n_samples,dimensions]
         experimental_targets - ground truth targets corresponding to the bove measurements in the format [n_samples,dimensions]
+        warm_up - whether to perform the bottleneck warmup
+        wu_start - at what iteration to start the warmup
+        wu_end - at what iteration to end the warmup
         save_dir - directory in which to save the trained inverse model weights (defaults to 'neural_networks/saved-weights/inverse_model')
         load_dir - directory from which to load the trained inverse model weights (defaults to 'neural_networks/saved-weights/forward_model')
     OUTPUTS:
