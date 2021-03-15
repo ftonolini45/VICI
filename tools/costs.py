@@ -121,7 +121,7 @@ def np_gaussian_log_likelihood(x,mu_x, log_sig_sq_x, SMALL_CONSTANT = 1e-7):
     
     return log_lik
 
-def cvae_cost(x, y, encoder, decoder, encoder_c):
+def cvae_cost(x, y, encoder, decoder, encoder_c, wu_c=0.0):
     '''
     Cost function for conditional VAE
     INPUTS:
@@ -132,6 +132,7 @@ def cvae_cost(x, y, encoder, decoder, encoder_c):
         encoder_c - the neural network to be used for mapping x to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
     OUTPUTS:
         cost - the cost function
+        wu_c = constant for bottleneck warmup. wu_c=0 means no bottleneck, wu_c=1 means completely imposing the bottleneck through the latent space
     '''
     
     x = tf.cast(x,tf.float32)
@@ -146,8 +147,11 @@ def cvae_cost(x, y, encoder, decoder, encoder_c):
     # sample from q(z|x,y)
     z = reparameterisation_trick(mu_z, log_sig_sq_z)
     
+    # bottleneck warmup
+    x_wu = ((1.0-wu_c)*x + wu_c*tf.random.uniform(x))/2.0
+    
     # compute moments of p(y|z,x)
-    mu_y, log_sig_sq_y = decoder.compute_moments(z,x)
+    mu_y, log_sig_sq_y = decoder.compute_moments(z,x_wu)
     
     # KL(q(z|x,y)|p(z|x))
     KLe = kl_normal(mu_z,log_sig_sq_z,mu_cz,log_sig_sq_cz)
@@ -163,7 +167,7 @@ def cvae_cost(x, y, encoder, decoder, encoder_c):
     
     return cost
 
-def dual_cvae_cost(x, x2, y, encoder, decoder, encoder_c, constrain=True):
+def dual_cvae_cost(x, x2, y, encoder, decoder, encoder_c, wu_c=0.0, constrain=True):
     '''
     Cost function for conditional VAE with two conditions
     INPUTS:
@@ -175,6 +179,7 @@ def dual_cvae_cost(x, x2, y, encoder, decoder, encoder_c, constrain=True):
         encoder_c - the neural network to be used for mapping x and x2 to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
     OUTPUTS:
         cost - the cost function
+        wu_c = constant for bottleneck warmup. wu_c=0 means no bottleneck, wu_c=1 means completely imposing the bottleneck through the latent space
     '''
     
     x = tf.cast(x,tf.float32)
@@ -190,8 +195,12 @@ def dual_cvae_cost(x, x2, y, encoder, decoder, encoder_c, constrain=True):
     # sample from q(z|x,y)
     z = reparameterisation_trick(mu_z, log_sig_sq_z)
     
+    # bottleneck warmup
+    x_wu = ((1.0-wu_c)*x + wu_c*tf.random.uniform(x))/2.0
+    x2_wu = ((1.0-wu_c)*x2 + wu_c*tf.random.uniform(x2))/2.0
+    
     # compute moments of p(y|z,x)
-    mu_y, log_sig_sq_y = decoder.compute_moments(z,x,x2,constrain=constrain)
+    mu_y, log_sig_sq_y = decoder.compute_moments(z,x_wu,x2_wu,constrain=constrain)
     
     # KL(q(z|x,y)|p(z|x))
     KLe = kl_normal(mu_z,log_sig_sq_z,mu_cz,log_sig_sq_cz)
@@ -207,7 +216,7 @@ def dual_cvae_cost(x, x2, y, encoder, decoder, encoder_c, constrain=True):
     
     return cost
 
-def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encoder_c, difference=False):
+def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encoder_c, wu_c=0.0, difference=False):
     '''
     Cost function for multi-fidelity forward model
     INPUTS:
@@ -219,18 +228,19 @@ def forward_model(targets, low_fidelity, high_fidelity, encoder, decoder, encode
         encoder_c - the neural network to be used for mapping targets and low_fidelity to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
     OPTIONAL INPUTS:
         difference - whether to model the high-fidelity directly (False) or the difference between high and low fidelity (True)
+        wu_c = constant for bottleneck warmup. wu_c=0 means no bottleneck, wu_c=1 means completely imposing the bottleneck through the latent space
     OUTPUTS:
         cost - the cost function
     '''
     
     if difference==False:
-        cost = dual_cvae_cost(targets, low_fidelity, high_fidelity, encoder, decoder, encoder_c)
+        cost = dual_cvae_cost(targets, low_fidelity, high_fidelity, encoder, decoder, encoder_c, wu_c=0.0)
     else:
-        cost = dual_cvae_cost(targets, low_fidelity, high_fidelity-low_fidelity, encoder, decoder, encoder_c,constrain=False)
+        cost = dual_cvae_cost(targets, low_fidelity, high_fidelity-low_fidelity, encoder, decoder, encoder_c, wu_c=0.0, constrain=False)
     
     return cost
 
-def inverse_model(measurements, targets, encoder, decoder, encoder_c):
+def inverse_model(measurements, targets, encoder, decoder, encoder_c, wu_c=0.0):
     '''
     Cost function for inverse model
     INPUTS:
@@ -239,10 +249,12 @@ def inverse_model(measurements, targets, encoder, decoder, encoder_c):
         encoder - the neural network to be used for mapping measurements and targets to mu_z and log_sig_sq_z
         decoder - the neural network to be used for mapping z and measurements to mu_targets and log_sig_sq_targets
         encoder_c - the neural network to be used for mapping measurements to mu_cz and log_sig_sq_cz (conditional prior distribution in the latent space)
+    OPTIONAL INPUTS:
+        wu_c = constant for bottleneck warmup. wu_c=0 means no bottleneck, wu_c=1 means completely imposing the bottleneck through the latent space
     OUTPUTS:
         cost - the cost function
     '''
     
-    cost = cvae_cost(measurements, targets, encoder, decoder, encoder_c)
+    cost = cvae_cost(measurements, targets, encoder, decoder, encoder_c, wu_c=0.0)
     
     return cost
