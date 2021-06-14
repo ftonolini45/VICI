@@ -148,7 +148,7 @@ def cvae_cost(x, y, encoder, decoder, encoder_c, wu_c=0.0):
     z = reparameterisation_trick(mu_z, log_sig_sq_z)
     
     # bottleneck warmup
-    x_wu = ((1.0-wu_c)*x + wu_c*tf.random.uniform(tf.shape(x)))/2.0
+    x_wu = ((1.0-wu_c)*x + wu_c*tf.random.uniform(tf.shape(x)))
     
     # compute moments of p(y|z,x)
     mu_y, log_sig_sq_y = decoder.compute_moments(z,x_wu)
@@ -196,8 +196,8 @@ def dual_cvae_cost(x, x2, y, encoder, decoder, encoder_c, wu_c=0.0, constrain=Tr
     z = reparameterisation_trick(mu_z, log_sig_sq_z)
     
     # bottleneck warmup
-    x_wu = ((1.0-wu_c)*x + wu_c*tf.random.uniform(tf.shape(x)))/2.0
-    x2_wu = ((1.0-wu_c)*x2 + wu_c*tf.random.uniform(tf.shape(x2)))/2.0
+    x_wu = ((1.0-wu_c)*x + wu_c*tf.random.uniform(tf.shape(x)))
+    x2_wu = ((1.0-wu_c)*x2 + wu_c*tf.random.uniform(tf.shape(x2)))
     
     # compute moments of p(y|z,x)
     mu_y, log_sig_sq_y = decoder.compute_moments(z,x_wu,x2_wu,constrain=constrain)
